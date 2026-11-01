@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MG Mart - Modern Grocery, Desi Rasoi &amp; Curated World Gourmet</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            },
+            obsidian: '#070a12',
+            slate: {
+              750: '#293548',
+              850: '#151d2f',
+              925: '#0b0f19',
+              950: '#060913',
+            }
+          },
+          boxShadow: {
+            'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.35)',
+            'glow-violet': '0 0 25px -5px rgba(139, 92, 246, 0.35)',
+            'card-soft': '0 10px 30px -10px rgba(0, 0, 0, 0.08)',
+            'card-dark': '0 15px 35px -10px rgba(0, 0, 0, 0.5)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- QRCode.js for dynamic UPI QR generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.45);
+    }
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .dark .glass-nav {
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .dark .glass-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.92; transform: scale(0.995); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-300 selection:bg-emerald-500 selection:text-white">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, createContext, useContext } = React;
+
+    // --- SEED CATALOG DATA (AUTHENTIC INDIAN GROCERIES & IMPORTED GOURMET) ---
+    const INITIAL_PRODUCTS = [
+      // ====== 🇮🇳 AUTHENTIC INDIAN DESI GROCERIES ======
+      {
+        id: 101,
+        name: "Aashirvaad Superior MP Shudh Chakki Atta (100% Whole Wheat)",
+        categoryName: "Desi Atta, Rice & Dals",
+        categorySlug: "staples-grains",
+        description: "Heavy golden wheat grains ground in traditional stone chakkis for soft, fluffy rotis with natural fibre.",
+        mrpPrice: 480.00,
+        dmartPrice: 389.00,
+        stockQuantity: 120,
+        unit: "10 kg",
+        imageUrl: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 102,
+        name: "India Gate Super Basmati Rice (Aged Long Fluffy Grains)",
+        categoryName: "Desi Atta, Rice & Dals",
+        categorySlug: "staples-grains",
+        description: "Aged for 2 years in Himalayan foothills. Slender, pearly-white grains with irresistible natural aroma for biryani.",
+        mrpPrice: 799.00,
+        dmartPrice: 549.00,
+        stockQuantity: 95,
+        unit: "5 kg",
+        imageUrl: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: true,
+        flashSaleDiscountPct: 31
+      },
+      {
+        id: 103,
+        name: "Tata Sampann High-Protein Unpolished Toor Dal (Arhar)",
+        categoryName: "Desi Atta, Rice & Dals",
+        categorySlug: "staples-grains",
+        description: "Wholesome unpolished pigeon peas that retain their natural dietary fibre, rich protein, and authentic dal tadka aroma.",
+        mrpPrice: 210.00,
+        dmartPrice: 159.00,
+        stockQuantity: 110,
+        unit: "1 kg",
+        imageUrl: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 104,
+        name: "Tata Sampann Organic Moong Dal Dhuli (Yellow Split)",
+        categoryName: "Desi Atta, Rice & Dals",
+        categorySlug: "staples-grains",
+        description: "Nutritious and easy to digest, rich in iron and protein. Sourced directly from certified organic farms.",
+        mrpPrice: 195.00,
+        dmartPrice: 145.00,
+        stockQuantity: 85,
+        unit: "1 kg",
+        imageUrl: "https://images.unsplash.com/photo-1585728748178-57762caafddb?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 105,
+        name: "Fortune Kachi Ghani Pure Mustard Oil (Cold-Pressed Sarson Tel)",
+        categoryName: "Desi Atta, Rice & Dals",
+        categorySlug: "staples-grains",
+        description: "Traditional pungency (teekha swaad) extracted from the finest mustard seeds, perfect for Indian cooking and pickles.",
+        mrpPrice: 195.00,
+        dmartPrice: 139.00,
+        stockQuantity: 90,
+        unit: "1 Litre",
+        imageUrl: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: true,
+        flashSaleDiscountPct: 29
+      },
+      {
+        id: 106,
+        name: "Amul Pure Desi Cow Ghee (Aromatic Danedar Tin)",
+        categoryName: "Pure Desi Ghee & Dairy",
+        categorySlug: "dairy-bakery",
+        description: "Golden granular pure cow ghee made from fresh cream. Rich in vitamins A and natural antioxidants for everyday immunity.",
+        mrpPrice: 690.00,
+        dmartPrice: 569.00,
+        stockQuantity: 70,
+        unit: "1 Litre",
+        imageUrl: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: true,
+        flashSaleDiscountPct: 18
+      },
+      {
+        id: 107,
+        name: "Amul Fresh Malai Paneer Cubes",
+        categoryName: "Pure Desi Ghee & Dairy",
+        categorySlug: "dairy-bakery",
+        description: "Extra soft, melt-in-the-mouth paneer made from pure pasteurised milk, ideal for Shahi Paneer, Palak Paneer and tikka.",
+        mrpPrice: 140.00,
+        dmartPrice: 118.00,
+        stockQuantity: 80,
+        unit: "200 g",
+        imageUrl: "https://images.unsplash.com/photo-1631451095765-2c91616fc9e6?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 108,
+        name: "Everest Royal Garam Masala (13 Authentic Whole Spices)",
+        categoryName: "Indian Masalas & Spices",
+        categorySlug: "spices-masalas",
+        description: "Fine blend of black cardamom, cinnamon, cloves, mace and nutmeg to add rich warmth to curries.",
+        mrpPrice: 95.00,
+        dmartPrice: 79.00,
+        stockQuantity: 150,
+        unit: "100 g",
+        imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 109,
+        name: "MDH Deggi Mirch (Natural Kashmiri Red Chili Powder)",
+        categoryName: "Indian Masalas & Spices",
+        categorySlug: "spices-masalas",
+        description: "Unique blend of mildly pungent Kashmiri chillies that impart vibrant natural red color and appetizing aroma.",
+        mrpPrice: 110.00,
+        dmartPrice: 89.00,
+        stockQuantity: 140,
+        unit: "100 g",
+        imageUrl: "https://images.unsplash.com/photo-1509358271058-acd22cc93898?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 110,
+        name: "Catch Pink Rock Salt Sendha Namak Jar",
+        categoryName: "Indian Masalas & Spices",
+        categorySlug: "spices-masalas",
+        description: "100% natural, unrefined rock salt crystals packed with 84 essential trace minerals, perfect for fasting and salads.",
+        mrpPrice: 120.00,
+        dmartPrice: 95.00,
+        stockQuantity: 100,
+        unit: "1 kg",
+        imageUrl: "https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 111,
+        name: "Brooke Bond Red Label Natural Care Tea (5 Ayurvedic Herbs)",
+        categoryName: "Desi Chai & Namkeen",
+        categorySlug: "snacks-beverages",
+        description: "Special blend infused with Ashwagandha, Tulsi, Cardamom, Ginger and Mulethi for daily immunity and refreshing taste.",
+        mrpPrice: 380.00,
+        dmartPrice: 299.00,
+        stockQuantity: 90,
+        unit: "500 g",
+        imageUrl: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: true,
+        flashSaleDiscountPct: 21
+      },
+      {
+        id: 112,
+        name: "Haldiram's Nagpur Spicy Aloo Bhujia Sev",
+        categoryName: "Desi Chai & Namkeen",
+        categorySlug: "snacks-beverages",
+        description: "Crispy fried spiced potato and gram flour noodles tossed in mint, red chilli, and amchur for teatime.",
+        mrpPrice: 135.00,
+        dmartPrice: 105.00,
+        stockQuantity: 130,
+        unit: "400 g",
+        imageUrl: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 113,
+        name: "Haldiram's Royal Soan Papdi Festive Mithai Box",
+        categoryName: "Desi Chai & Namkeen",
+        categorySlug: "snacks-beverages",
+        description: "Flaky, melt-in-the-mouth gram flour confectionery enriched with pure desi cow ghee, pistachio shavings, and cardamom.",
+        mrpPrice: 280.00,
+        dmartPrice: 219.00,
+        stockQuantity: 80,
+        unit: "500 g",
+        imageUrl: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: true,
+        flashSaleDiscountPct: 22
+      },
+      {
+        id: 114,
+        name: "Maggi 2-Minute Special Masala Instant Noodles (12-Pack)",
+        categoryName: "Desi Chai & Namkeen",
+        categorySlug: "snacks-beverages",
+        description: "India's favorite comfort meal crafted with signature roasted whole spices including coriander, cumin, and fenugreek.",
+        mrpPrice: 192.00,
+        dmartPrice: 159.00,
+        stockQuantity: 140,
+        unit: "840 g (12x70g)",
+        imageUrl: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=600&auto=format&fit=crop&q=80",
+        isImported: false,
+        originCountry: "India",
+        isFlashSale: true,
+        flashSaleDiscountPct: 17
+      },
+
+      // ====== 🌍 IMPORTED GOURMET & INTERNATIONAL DELICACIES ======
+      {
+        id: 1,
+        name: "Ferrero Rocher Hazelnut Truffles 24 Pcs Gift Box",
+        categoryName: "Imported & Gourmet",
+        categorySlug: "imported-gourmet",
+        description: "Exquisite Italian whole hazelnut coated with velvety chocolate cream and crispy wafer sphere.",
+        mrpPrice: 1250.00,
+        dmartPrice: 899.00,
+        stockQuantity: 35,
+        unit: "300 g",
+        imageUrl: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=600&auto=format&fit=crop&q=80",
+        isImported: true,
+        originCountry: "Italy",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 2,
+        name: "Lindt Excellence 85% Cocoa Dark Chocolate",
+        categoryName: "Imported & Gourmet",
+        categorySlug: "imported-gourmet",
+        description: "Master Swiss chocolatier crafted rich dark chocolate bar with delicate aromatic vanilla notes.",
+        mrpPrice: 395.00,
+        dmartPrice: 289.00,
+        stockQuantity: 50,
+        unit: "100 g",
+        imageUrl: "https://images.unsplash.com/photo-1548907040-4baa42d10919?w=600&auto=format&fit=crop&q=80",
+        isImported: true,
+        originCountry: "Switzerland",
+        isFlashSale: true,
+        flashSaleDiscountPct: 42
+      },
+      {
+        id: 3,
+        name: "Barilla Authentic Italian Penne Rigate Pasta",
+        categoryName: "Imported & Gourmet",
+        categorySlug: "imported-gourmet",
+        description: "Made from 100% durum wheat semolina imported directly from Parma, Italy.",
+        mrpPrice: 275.00,
+        dmartPrice: 185.00,
+        stockQuantity: 80,
+        unit: "500 g",
+        imageUrl: "https://images.unsplash.com/photo-1621996346565-e3d5d6281699?w=600&auto=format&fit=crop&q=80",
+        isImported: true,
+        originCountry: "Italy",
+        isFlashSale: false,
+        flashSaleDiscountPct: 0
+      },
+      {
+        id: 4,
+        name: "Borges Cold-Pressed Extra Virgin Olive Oil",
+        categoryName: "Imported & Gourmet",
+        categorySlug: "imported-gourmet",
+        description: "Pure Mediterranean first cold extraction olive oil with fruity aroma.",
+        mrpPrice: 1450.00,
+        dmartPrice: 999.00,
+        stockQuantity: 25,
+        unit: "1 Litre",
+        imageUrl: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&auto=format&fit=crop&q=80",
+        isImported: true,
+        originCountry: "Spain",
+        isFlashSale: true,
+        flashSaleDiscountPct: 38
+      },
+      {
+        id: 5,
+        name: "Uji Ceremonial Grade Japanese Organic Matcha Tea",
+        categoryName: "Imported & Gourmet",
+        categorySlug: "imported-gourmet",
+        description: "Stone ground young green tea leaves from historic Kyoto plantations.",
+        mrpPrice: 1899.00,
+        dmartPrice: 1349.00,
+        stockQuantity: 18,
+        unit: "50 g",
+        imageUrl: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=600&auto=format&fit=crop&q=80",
+        isImported: true,
+        originCountry: "Japan",
+        isFlashSale: true,
+        flashSaleDiscountPct: 35
+      },
+      {
+        id: 6,
+        name: "California Selected Jumbo Almonds & Walnuts Combo",
+        categoryName: "Imported & Gourmet",
+        categorySlug: "imported-gourmet",
+        description: "Crunchy, hand-sorted whole California almonds vacuum packed for peak freshness.",
+        mrpPrice: 950.00,
+        dmartPrice: 699.00,
+        stockQuantity: 60,
+        unit: "500 g",
+        imageUrl: "https://images.unsplash.com/photo-1508061252224-43775270e0a4?w=600&auto=format&fit=crop&q=80",
+        isImported: true,
+        originCountry: "USA",
+        isFlashSale: true,
+        flashSaleDiscountPct: 30
+      }
+    ];
+
+    const CATEGORIES = [
+      { id: 1, name: "All Aisles", slug: "all", icon: "✨" },
+      { id: 2, name: "🇮🇳 Desi Atta, Rice & Dals", slug: "staples-grains", icon: "🌾" },
+      { id: 3, name: "🌶️ Indian Masalas & Spices", slug: "spices-masalas", icon: "🌶️" },
+      { id: 4, name: "🥛 Pure Desi Ghee & Dairy", slug: "dairy-bakery", icon: "🥛" },
+      { id: 5, name: "☕ Desi Chai & Namkeen", slug: "snacks-beverages", icon: "☕" },
+      { id: 6, name: "🌍 World Gourmet Imports", slug: "imported-gourmet", icon: "🌍" }
+    ];
+
+    const SAVED_CARDS_STORAGE = [
+      { id: 1, cardHolderName: "Muaviya Markande", maskedCardNumber: "•••• •••• •••• 4242", cardBrand: "VISA", expiryMonth: "08", expiryYear: "28" },
+      { id: 2, cardHolderName: "Muaviya Markande", maskedCardNumber: "•••• •••• •••• 8899", cardBrand: "MASTERCARD", expiryMonth: "12", expiryYear: "27" }
+    ];
+
+    // --- MAIN APPLICATION COMPONENT ---
+    function App() {
+      // Theme State (Dark mode default, stored in localStorage)
+      const [darkMode, setDarkMode] = useState(() => {
+        const saved = localStorage.getItem('mgmart_theme');
+        return saved ? saved === 'dark' : true;
+      });
+
+      useEffect(() => {
+        if (darkMode) {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('mgmart_theme', 'dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('mgmart_theme', 'light');
+        }
+      }, [darkMode]);
+
+      // Catalog & Navigation State
+      const [products, setProducts] = useState(INITIAL_PRODUCTS);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('all');
+      const [originFilter, setOriginFilter] = useState('ALL');
+      const [sortBy, setSortBy] = useState('featured');
+      const [activeTabFilter, setActiveTabFilter] = useState('all'); // 'all' | 'desi' | 'flash' | 'imported'
+
+      // Cart State
+      const [cart, setCart] = useState([]);
+      const [isCartOpen, setIsCartOpen] = useState(false);
+
+      // Modals State
+      const [isAuthOpen, setIsAuthOpen] = useState(false);
+      const [authTab, setAuthTab] = useState('signin');
+      const [user, setUser] = useState({ name: 'Muaviya Markande', email: 'customer@mgmart.com', role: 'CUSTOMER' });
+      
+      const [isAdminOpen, setIsAdminOpen] = useState(false);
+      const [adminTab, setAdminTab] = useState('list');
+      
+      const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+      const [isUpiModalOpen, setIsUpiModalOpen] = useState(false);
+      const [orderSuccess, setOrderSuccess] = useState(null);
+
+      // Flash Sale Countdown Ticker (Ticking every second)
+      const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 28, seconds: 45 });
+      useEffect(() => {
+        const timer = setInterval(() => {
+          setTimeLeft(prev => {
+            if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+            if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
+            if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+            return { hours: 6, minutes: 0, seconds: 0 };
+          });
+        }, 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      // Cart Operations
+      const addToCart = (product) => {
+        setCart(prev => {
+          const existing = prev.find(item => item.id === product.id);
+          if (existing) {
+            return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+          }
+          return [...prev, { ...product, quantity: 1 }];
+        });
+        setIsCartOpen(true);
+      };
+
+      const updateQuantity = (id, delta) => {
+        setCart(prev => prev.map(item => {
+          if (item.id === id) {
+            const nextQty = item.quantity + delta;
+            return nextQty > 0 ? { ...item, quantity: nextQty } : null;
+          }
+          return item;
+        }).filter(Boolean));
+      };
+
+      const cartTotal = cart.reduce((sum, item) => sum + (item.dmartPrice * item.quantity), 0);
+      const cartTotalMrp = cart.reduce((sum, item) => sum + (item.mrpPrice * item.quantity), 0);
+      const cartSavings = cartTotalMrp - cartTotal;
+      const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+      // Checkout Form State
+      const [shippingInfo, setShippingInfo] = useState({
+        name: 'Muaviya Markande',
+        phone: '+91 98765 43210',
+        address: 'Villa 14, Silicon Oasis Avenue, Whitefield',
+        city: 'Bengaluru',
+        pincode: '560066',
+        paymentMethod: 'UPI'
+      });
+
+      const [savedCards, setSavedCards] = useState(SAVED_CARDS_STORAGE);
+      const [selectedCardId, setSelectedCardId] = useState(1);
+      const [newCardNumber, setNewCardNumber] = useState('');
+      const [newCardExpiry, setNewCardExpiry] = useState('');
+      const [newCardCvv, setNewCardCvv] = useState('');
+      const [saveCardForFuture, setSaveCardForFuture] = useState(true);
+
+      const qrCodeRef = useRef(null);
+
+      // Render Dynamic QR when UPI Modal opens
+      useEffect(() => {
+        if (isUpiModalOpen && qrCodeRef.current) {
+          qrCodeRef.current.innerHTML = '';
+          const upiString = `upi://pay?pa=mgmart@okhdfcbank&pn=MG%20Mart%20Supercenter&am=${cartTotal.toFixed(2)}&cu=INR&tn=MGMART-ORDER-${Date.now()}`;
+          if (window.QRCode) {
+            new QRCode(qrCodeRef.current, {
+              text: upiString,
+              width: 210,
+              height: 210,
+              colorDark: "#070a12",
+              colorLight: "#ffffff",
+              correctLevel: QRCode.CorrectLevel.H
+            });
+          }
+        }
+      }, [isUpiModalOpen, cartTotal]);
+
+      // Complete Checkout Trigger
+      const handleProceedToPayment = () => {
+        if (shippingInfo.paymentMethod === 'UPI') {
+          setIsCheckoutOpen(false);
+          setIsUpiModalOpen(true);
+        } else if (shippingInfo.paymentMethod === 'CARD') {
+          if (saveCardForFuture && newCardNumber.length >= 12) {
+            const last4 = newCardNumber.slice(-4);
+            setSavedCards(prev => [...prev, {
+              id: Date.now(),
+              cardHolderName: shippingInfo.name,
+              maskedCardNumber: `•••• •••• •••• ${last4}`,
+              cardBrand: "VISA",
+              expiryMonth: "09",
+              expiryYear: "29"
+            }]);
+          }
+          completeOrder("SAVED CARD");
+        } else {
+          completeOrder("CASH ON DELIVERY");
+        }
+      };
+
+      const completeOrder = (methodUsed) => {
+        const orderNum = `MG-${Date.now().toString().slice(-6)}`;
+        setOrderSuccess({
+          orderNumber: orderNum,
+          amount: cartTotal,
+          paymentMethod: methodUsed || shippingInfo.paymentMethod,
+          date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+        });
+        setCart([]);
+        setIsCheckoutOpen(false);
+        setIsUpiModalOpen(false);
+      };
+
+      // Filtered Catalog
+      const filteredProducts = products.filter(p => {
+        // Tab Filters
+        if (activeTabFilter === 'flash' && !p.isFlashSale) return false;
+        if (activeTabFilter === 'imported' && !p.isImported) return false;
+        if (activeTabFilter === 'desi' && (p.isImported && p.originCountry !== 'India')) return false;
+        
+        // Category Filter
+        if (selectedCategory !== 'all' && p.categorySlug !== selectedCategory) return false;
+        
+        // Origin Filter for Imported
+        if (originFilter !== 'ALL' && p.originCountry !== originFilter) return false;
+
+        // Search Query
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          return p.name.toLowerCase().includes(q) || 
+                 p.categoryName.toLowerCase().includes(q) || 
+                 (p.originCountry && p.originCountry.toLowerCase().includes(q));
+        }
+        return true;
+      }).sort((a, b) => {
+        if (sortBy === 'price-low') return a.dmartPrice - b.dmartPrice;
+        if (sortBy === 'price-high') return b.dmartPrice - a.dmartPrice;
+        if (sortBy === 'discount') {
+          const discA = Math.round(((a.mrpPrice - a.dmartPrice) / a.mrpPrice) * 100);
+          const discB = Math.round(((b.mrpPrice - b.dmartPrice) / b.mrpPrice) * 100);
+          return discB - discA;
+        }
+        return 0;
+      });
+
+      const flashProducts = products.filter(p => p.isFlashSale);
+      const importedProducts = products.filter(p => p.isImported);
+      const indianProducts = products.filter(p => !p.isImported || p.originCountry === 'India');
+
+      // Origin Countries list for filter
+      const originCountries = ['ALL', ...new Set(importedProducts.map(p => p.originCountry))];
+
+      return (
+        <div className="flex flex-col min-h-screen">
+          
+          {/* TOP ANNOUNCEMENT BANNER */}
+          <div className="bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-950 text-slate-300 text-[11px] py-2 px-4 border-b border-emerald-900/40">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span className="font-semibold text-emerald-400 uppercase tracking-wider text-[10px]">Fresh Daily Stock</span>
+                <span className="hidden sm:inline text-slate-400">• Free express delivery on Indian staples &amp; gourmet carts above ₹500</span>
+              </div>
+              <div className="flex items-center gap-4 text-xs">
+                <span className="hidden md:inline text-slate-400">100% Shudh Chakki Atta, Pure Desi Ghee &amp; Direct Imports</span>
+                <button 
+                  onClick={() => setIsAdminOpen(true)}
+                  className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                  Store Console
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* FLOATING GLASS HEADER / NAVBAR */}
+          <header className="sticky top-0 z-40 glass-nav border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm transition-colors">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-20 gap-4">
+                
+                {/* Brand Logo & Monogram */}
+                <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setActiveTabFilter('all'); setSelectedCategory('all'); }}>
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 text-white font-black text-2xl flex items-center justify-center shadow-lg shadow-emerald-500/25 tracking-tighter">
+                    MG
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xl font-black text-slate-950 dark:text-white tracking-tight">
+                        MG <span className="text-emerald-500">MART</span>
+                      </span>
+                      <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-full border border-emerald-500/20">
+                        Supercenter
+                      </span>
+                    </div>
+                    <span className="block text-[10px] text-slate-400 font-semibold tracking-wider uppercase">
+                      Desi Rasoi &amp; Curated Gourmet
+                    </span>
+                  </div>
+                </div>
+
+                {/* Instant Search Bar */}
+                <div className="flex-1 max-w-lg hidden md:block">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search Chakki Atta, Basmati Rice, Desi Cow Ghee, Garam Masala, Matcha..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-11 pr-10 py-2.5 bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-full text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all shadow-inner"
+                    />
+                    <svg className="w-4 h-4 text-slate-400 absolute left-4 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    {searchQuery && (
+                      <button onClick={() => setSearchQuery('')} className="absolute right-3.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs">
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick Filters Pill Nav */}
+                <div className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-slate-900/80 p-1 rounded-full border border-slate-200/60 dark:border-slate-800/60 text-xs font-bold">
+                  <button 
+                    onClick={() => setActiveTabFilter('all')} 
+                    className={`px-3.5 py-1.5 rounded-full transition-all ${activeTabFilter === 'all' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm font-black' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                  >
+                    All Aisles
+                  </button>
+                  <button 
+                    onClick={() => setActiveTabFilter('desi')} 
+                    className={`px-3.5 py-1.5 rounded-full flex items-center gap-1 transition-all ${activeTabFilter === 'desi' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30 font-black' : 'text-slate-500 hover:text-amber-500'}`}
+                  >
+                    <span>🇮🇳</span> Desi Groceries
+                  </button>
+                  <button 
+                    onClick={() => setActiveTabFilter('flash')} 
+                    className={`px-3.5 py-1.5 rounded-full flex items-center gap-1 transition-all ${activeTabFilter === 'flash' ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30 font-black' : 'text-slate-500 hover:text-rose-500'}`}
+                  >
+                    <span>⚡</span> Flash Vault
+                  </button>
+                  <button 
+                    onClick={() => setActiveTabFilter('imported')} 
+                    className={`px-3.5 py-1.5 rounded-full flex items-center gap-1 transition-all ${activeTabFilter === 'imported' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md font-black' : 'text-slate-500 hover:text-emerald-500'}`}
+                  >
+                    <span>🌍</span> World Gourmet
+                  </button>
+                </div>
+
+                {/* Right Action Icons (Dark Mode, Auth, Shopping Bag) */}
+                <div className="flex items-center gap-3">
+                  
+                  {/* Dark Mode Toggle Switch */}
+                  <button
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors border border-slate-200/80 dark:border-slate-800/80 shadow-sm"
+                    title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                  >
+                    {darkMode ? (
+                      <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    )}
+                  </button>
+
+                  {/* Auth Button */}
+                  <button
+                    onClick={() => setIsAuthOpen(true)}
+                    className="hidden sm:flex items-center gap-2 py-2 px-3.5 rounded-2xl bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800/80 text-xs font-bold transition-all"
+                  >
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <span>{user ? user.name.split(' ')[0] : 'Sign In'}</span>
+                  </button>
+
+                  {/* Bag / Cart Slide-out Trigger */}
+                  <button
+                    onClick={() => setIsCartOpen(true)}
+                    className="relative flex items-center gap-2.5 py-2 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-xs shadow-lg shadow-emerald-500/25 transition-all active:scale-95"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span className="hidden sm:inline">Bag</span>
+                    <span className="bg-white/20 text-white font-black px-1.5 py-0.5 rounded-full text-[10px]">
+                      {totalCartCount}
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* MAIN PAGE BODY */}
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+            
+            {/* HERO FLASH SALE SECTION: "MG FLASH VAULT" */}
+            {activeTabFilter !== 'imported' && activeTabFilter !== 'desi' && (
+              <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-slate-950 via-slate-900 to-obsidian border border-slate-800/90 shadow-2xl p-6 sm:p-10 text-white">
+                
+                {/* Background Glow Orbs */}
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-rose-500/15 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-800/80">
+                  <div className="space-y-1">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 text-rose-400 text-xs font-black uppercase tracking-wider border border-rose-500/30">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                      MG Flash Vault • Live Markdown Event
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white mt-1">
+                      Lightning Offers &amp; Deep Dispatches
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-400 max-w-xl">
+                      Ultra-limited grocery stock with guaranteed minimum 30% savings. Once claims hit 100%, prices reset to standard catalog rates.
+                    </p>
+                  </div>
+
+                  {/* Real-time Ticking Countdown Block */}
+                  <div className="flex items-center gap-2 sm:gap-3 bg-slate-900/90 backdrop-blur-md p-3 sm:p-4 rounded-3xl border border-slate-750 shadow-inner">
+                    <div className="text-center px-2">
+                      <span className="block text-xl sm:text-2xl font-black text-white font-mono">{String(timeLeft.hours).padStart(2, '0')}</span>
+                      <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Hours</span>
+                    </div>
+                    <span className="text-rose-500 font-bold text-xl">:</span>
+                    <div className="text-center px-2">
+                      <span className="block text-xl sm:text-2xl font-black text-white font-mono">{String(timeLeft.minutes).padStart(2, '0')}</span>
+                      <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Mins</span>
+                    </div>
+                    <span className="text-rose-500 font-bold text-xl">:</span>
+                    <div className="text-center px-2">
+                      <span className="block text-xl sm:text-2xl font-black text-rose-400 font-mono animate-pulse">{String(timeLeft.seconds).padStart(2, '0')}</span>
+                      <span className="text-[9px] uppercase tracking-wider text-rose-400 font-bold">Secs</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Flash Sale Product Cards Carousel/Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
+                  {flashProducts.map(p => {
+                    const discount = Math.round(((p.mrpPrice - p.dmartPrice) / p.mrpPrice) * 100);
+                    return (
+                      <div key={p.id} className="group relative bg-slate-900/80 hover:bg-slate-850 rounded-3xl p-4 border border-slate-800 hover:border-rose-500/50 transition-all duration-300 flex flex-col justify-between shadow-lg">
+                        
+                        {/* Discount Badge */}
+                        <div className="absolute top-4 left-4 z-10 bg-rose-500 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-xl shadow-md tracking-wider">
+                          {discount}% OFF
+                        </div>
+
+                        {/* Product Image */}
+                        <div className="h-40 w-full overflow-hidden rounded-2xl bg-slate-950 mb-3 relative">
+                          <img 
+                            src={p.imageUrl} 
+                            alt={p.name} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          />
+                          <div className="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-bold border border-slate-700/60 text-slate-200">
+                            {p.originCountry || 'India'}
+                          </div>
+                        </div>
+
+                        {/* Title & Info */}
+                        <div className="space-y-1.5 flex-1">
+                          <div className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
+                            {p.unit}
+                          </div>
+                          <h4 className="font-bold text-sm text-white line-clamp-2 leading-tight">
+                            {p.name}
+                          </h4>
+                          
+                          {/* Claim Bar */}
+                          <div className="pt-2">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-1">
+                              <span>Claimed: 74%</span>
+                              <span className="text-rose-400">{p.stockQuantity} left</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-rose-500 to-amber-400 rounded-full w-3/4"></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Pricing & Add Button */}
+                        <div className="pt-4 flex items-center justify-between border-t border-slate-800/80 mt-3">
+                          <div>
+                            <span className="text-xs line-through text-slate-500 block">₹{p.mrpPrice}</span>
+                            <span className="text-base font-black text-emerald-400">₹{p.dmartPrice}</span>
+                          </div>
+                          <button
+                            onClick={() => addToCart(p)}
+                            className="py-2 px-3.5 rounded-2xl bg-white hover:bg-emerald-400 text-slate-950 hover:text-slate-950 font-black text-xs transition-all shadow-md active:scale-95"
+                          >
+                            + Add
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* 🇮🇳 AUTHENTIC INDIAN DESI GROCERY & RASOI ESSENTIALS */}
+            {activeTabFilter !== 'imported' && activeTabFilter !== 'flash' && (
+              <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-amber-50/70 via-orange-50/20 to-white dark:from-slate-900/90 dark:via-slate-925 dark:to-slate-950 p-6 sm:p-10 border border-amber-200/80 dark:border-amber-900/40 shadow-xl space-y-6">
+                
+                {/* Decorative Amber Glow */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-amber-400/10 dark:bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-5 pb-6 border-b border-amber-200/60 dark:border-slate-800">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 mb-2 border border-amber-200 dark:border-amber-800/60">
+                      <span>🇮🇳</span>
+                      Desi Rasoi &amp; Heritage Kitchen
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                      Authentic Indian Grocery Essentials
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-2xl mt-1">
+                      100% Shudh Chakki Atta, aged long-grain Basmati, unpolished protein-rich pulses, pure cold-pressed sarson oil, and aromatic spices directly from Indian farmers.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3 bg-white/90 dark:bg-slate-850/90 backdrop-blur-md border border-amber-200/80 dark:border-amber-800/60 px-4 py-2.5 rounded-2xl shadow-sm">
+                    <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/80 flex items-center justify-center text-amber-700 dark:text-amber-400 font-bold">
+                      ✓
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100">Agmark Certified</div>
+                      <div className="text-[10px] text-slate-500">100% Pure &amp; Farm Direct</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Indian Products Grid */}
+                <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {indianProducts.slice(0, 8).map(p => {
+                    const discount = Math.round(((p.mrpPrice - p.dmartPrice) / p.mrpPrice) * 100);
+                    return (
+                      <div key={p.id} className="group bg-white dark:bg-slate-900/90 rounded-[2rem] p-4 border border-slate-200/80 dark:border-slate-800/80 hover:shadow-card-dark transition-all duration-300 flex flex-col justify-between relative">
+                        
+                        {/* Shudh Indian Badge */}
+                        <div className="absolute top-4 right-4 z-10 bg-amber-500/10 dark:bg-amber-400/20 text-amber-700 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-lg border border-amber-300/40">
+                          🇮🇳 Desi Choice
+                        </div>
+
+                        {/* Image */}
+                        <div className="h-44 w-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 mb-3.5 relative">
+                          <img 
+                            src={p.imageUrl} 
+                            alt={p.name} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          />
+                          {discount > 0 && (
+                            <div className="absolute bottom-2 left-2 bg-emerald-500 text-white font-black text-[10px] px-2 py-0.5 rounded-lg shadow">
+                              {discount}% OFF
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="space-y-1 flex-1">
+                          <span className="text-[10px] font-extrabold uppercase text-amber-600 dark:text-amber-400 tracking-wider">
+                            {p.unit}
+                          </span>
+                          <h3 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-2 leading-snug">
+                            {p.name}
+                          </h3>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                            {p.description}
+                          </p>
+                        </div>
+
+                        {/* Price & Add */}
+                        <div className="pt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 mt-3">
+                          <div>
+                            <span className="text-[11px] line-through text-slate-400 block">₹{p.mrpPrice}</span>
+                            <span className="text-base font-black text-slate-900 dark:text-white">₹{p.dmartPrice}</span>
+                          </div>
+                          <button
+                            onClick={() => addToCart(p)}
+                            className="py-2 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs transition-all shadow-md active:scale-95"
+                          >
+                            + Add to Bag
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* CURATED WORLD GOURMET SECTION */}
+            {activeTabFilter !== 'flash' && activeTabFilter !== 'desi' && (
+              <section className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      Direct Terroir Imports
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                      Curated Global Terroir &amp; World Gourmet
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Authentic imported delicacies from certified master artisans in Italy, Switzerland, Japan, and Spain.
+                    </p>
+                  </div>
+
+                  {/* Origin Country Filter Chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+                    {originCountries.map(country => (
+                      <button
+                        key={country}
+                        onClick={() => setOriginFilter(country)}
+                        className={`text-xs px-3 py-1.5 rounded-2xl font-bold whitespace-nowrap transition-all ${
+                          originFilter === country
+                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md font-black'
+                            : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-400'
+                        }`}
+                      >
+                        {country === 'ALL' ? '🌍 All Countries' : `🏳️ ${country}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Imported Showcase Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {importedProducts
+                    .filter(p => originFilter === 'ALL' || p.originCountry === originFilter)
+                    .map(p => {
+                      const discount = Math.round(((p.mrpPrice - p.dmartPrice) / p.mrpPrice) * 100);
+                      return (
+                        <div key={p.id} className="group bg-white dark:bg-slate-900/90 rounded-[2rem] p-4 border border-slate-200/80 dark:border-slate-800/80 hover:shadow-card-dark transition-all duration-300 flex flex-col justify-between relative">
+                          
+                          {/* Origin Stamp */}
+                          <div className="absolute top-4 right-4 z-10 bg-slate-900/80 dark:bg-slate-800/90 backdrop-blur-md text-slate-200 text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-700/60 shadow-sm flex items-center gap-1">
+                            <span>🌍</span> {p.originCountry}
+                          </div>
+
+                          {/* Image */}
+                          <div className="h-44 w-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 mb-3.5 relative">
+                            <img 
+                              src={p.imageUrl} 
+                              alt={p.name} 
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                            />
+                            {discount > 0 && (
+                              <div className="absolute bottom-2 left-2 bg-emerald-500 text-white font-black text-[10px] px-2 py-0.5 rounded-lg shadow">
+                                {discount}% OFF
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Content */}
+                          <div className="space-y-1.5 flex-1">
+                            <span className="text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
+                              {p.unit}
+                            </span>
+                            <h3 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-2 leading-snug">
+                              {p.name}
+                            </h3>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">
+                              {p.description}
+                            </p>
+                          </div>
+
+                          {/* Price & Add */}
+                          <div className="pt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 mt-3">
+                            <div>
+                              <span className="text-[11px] line-through text-slate-400 block">₹{p.mrpPrice}</span>
+                              <span className="text-base font-black text-slate-900 dark:text-white">₹{p.dmartPrice}</span>
+                            </div>
+                            <button
+                              onClick={() => addToCart(p)}
+                              className="py-2 px-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-500 dark:hover:bg-emerald-500 text-emerald-700 dark:text-emerald-300 hover:text-white font-extrabold text-xs border border-emerald-200 dark:border-emerald-800/60 hover:border-transparent transition-all shadow-sm active:scale-95"
+                            >
+                              + Add to Bag
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </section>
+            )}
+
+            {/* FULL CATALOG GRID WITH CATEGORIES & SORT */}
+            <section className="space-y-6 pt-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                    Explore MG Mart All-Aisles Catalog
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Showing {filteredProducts.length} curated grocery items with verified live stock
+                  </p>
+                </div>
+
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-2 text-xs font-bold">
+                  <span className="text-slate-400">Sort By:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-xs font-semibold cursor-pointer"
+                  >
+                    <option value="featured">Featured Curations</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="discount">Highest Savings %</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Category Pills Bar */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => { setSelectedCategory(cat.slug); setActiveTabFilter('all'); }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all ${
+                      selectedCategory === cat.slug && activeTabFilter === 'all'
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/20 font-black'
+                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700'
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    <span>{cat.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Products Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {filteredProducts.map(p => {
+                  const discount = Math.round(((p.mrpPrice - p.dmartPrice) / p.mrpPrice) * 100);
+                  return (
+                    <div key={p.id} className="group bg-white dark:bg-slate-900/90 rounded-[2rem] p-4 border border-slate-200/80 dark:border-slate-800/80 hover:shadow-card-dark transition-all duration-300 flex flex-col justify-between">
+                      
+                      {/* Image Frame */}
+                      <div className="h-44 w-full rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 mb-3.5 relative">
+                        <img 
+                          src={p.imageUrl} 
+                          alt={p.name} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
+                          {discount > 0 && (
+                            <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-lg shadow-sm">
+                              {discount}% OFF
+                            </span>
+                          )}
+                          {p.isFlashSale && (
+                            <span className="bg-rose-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-lg shadow-sm">
+                              ⚡ Flash
+                            </span>
+                          )}
+                        </div>
+                        <div className="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded-lg text-[9px] font-bold text-slate-200 border border-slate-700/60">
+                          {p.isImported ? `🌍 ${p.originCountry}` : '🇮🇳 India'}
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          <span>{p.categoryName}</span>
+                          <span>{p.unit}</span>
+                        </div>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-2 leading-tight">
+                          {p.name}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
+                          {p.description}
+                        </p>
+                      </div>
+
+                      {/* Pricing Footer */}
+                      <div className="pt-4 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 mt-3">
+                        <div>
+                          <span className="text-[11px] line-through text-slate-400 block">₹{p.mrpPrice}</span>
+                          <span className="text-base font-black text-slate-900 dark:text-white">₹{p.dmartPrice}</span>
+                        </div>
+                        <button
+                          onClick={() => addToCart(p)}
+                          className="py-2 px-3.5 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-emerald-600 dark:hover:bg-emerald-400 hover:text-white dark:hover:text-slate-950 font-black text-xs transition-all shadow-md active:scale-95"
+                        >
+                          + Add
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </main>
+
+          {/* SLIDE-OVER CART DRAWER */}
+          {isCartOpen && (
+            <div className="fixed inset-0 z-50 overflow-hidden">
+              <div 
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
+                onClick={() => setIsCartOpen(false)}
+              ></div>
+              <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+                <div className="w-screen max-w-md bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 flex flex-col">
+                  
+                  {/* Cart Header */}
+                  <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                      </div>
+                      <div>
+                        <h3 className="font-black text-base text-slate-900 dark:text-white">Your Shopping Bag</h3>
+                        <span className="text-[11px] text-slate-400">{cart.length} distinct item(s)</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setIsCartOpen(false)}
+                      className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Free Delivery Tracker */}
+                  <div className="bg-emerald-50/80 dark:bg-emerald-950/40 p-4 border-b border-emerald-100 dark:border-emerald-900/50">
+                    {cartTotal >= 500 ? (
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                        <span>🎉</span>
+                        <span>Awesome! You unlocked <strong>FREE Express Home Delivery</strong>!</span>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                          <span>Add ₹{(500 - cartTotal).toFixed(0)} more for FREE Delivery</span>
+                          <span>{Math.round((cartTotal / 500) * 100)}%</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-emerald-200/60 dark:bg-emerald-900 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-emerald-500 rounded-full transition-all duration-300" 
+                            style={{ width: `${Math.min(100, (cartTotal / 500) * 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cart Items List */}
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                    {cart.length === 0 ? (
+                      <div className="text-center py-16 space-y-3">
+                        <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400 text-2xl">
+                          🛒
+                        </div>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white">Your bag is empty</h4>
+                        <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                          Add delicious imported delicacies or daily grocery essentials from our catalog.
+                        </p>
+                      </div>
+                    ) : (
+                      cart.map(item => (
+                        <div key={item.id} className="flex gap-3 p-3 bg-slate-50 dark:bg-slate-850 rounded-2xl border border-slate-200/80 dark:border-slate-800/80">
+                          <img src={item.imageUrl} alt="" className="w-16 h-16 rounded-xl object-cover bg-white" />
+                          <div className="flex-1 min-w-0">
+                            <h5 className="font-bold text-xs text-slate-900 dark:text-white truncate">{item.name}</h5>
+                            <span className="text-[10px] text-slate-400">{item.unit}</span>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="font-black text-xs text-emerald-600 dark:text-emerald-400">
+                                ₹{item.dmartPrice * item.quantity}
+                              </span>
+                              <div className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-xl text-xs font-bold">
+                                <button onClick={() => updateQuantity(item.id, -1)} className="text-slate-400 hover:text-rose-500 px-1">－</button>
+                                <span>{item.quantity}</span>
+                                <button onClick={() => updateQuantity(item.id, 1)} className="text-slate-400 hover:text-emerald-500 px-1">＋</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Cart Footer */}
+                  {cart.length > 0 && (
+                    <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-925 space-y-3">
+                      <div className="space-y-1.5 text-xs">
+                        <div className="flex justify-between text-slate-500">
+                          <span>Cart Subtotal</span>
+                          <span className="line-through">₹{cartTotalMrp.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                          <span>Total Discount Savings</span>
+                          <span>-₹{cartSavings.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-slate-500">
+                          <span>Estimated Delivery</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                            {cartTotal >= 500 ? 'FREE' : '₹49.00'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-800">
+                          <span>Total Payable</span>
+                          <span className="text-emerald-500">
+                            ₹{(cartTotal + (cartTotal >= 500 ? 0 : 49)).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => { setIsCartOpen(false); setIsCheckoutOpen(true); }}
+                        className="w-full py-3.5 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-500/25 transition-all active:scale-98"
+                      >
+                        Proceed To Checkout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* CHECKOUT MODAL */}
+          {isCheckoutOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md overflow-y-auto">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative my-8">
+                <button 
+                  onClick={() => setIsCheckoutOpen(false)}
+                  className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 rounded-full"
+                >
+                  ✕
+                </button>
+
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white">Secure Checkout &amp; Payment</h3>
+                    <p className="text-xs text-slate-400">Total order amount: ₹{cartTotal.toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  {/* Delivery Address */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                      Delivery Address
+                    </label>
+                    <input 
+                      type="text" 
+                      value={shippingInfo.address}
+                      onChange={(e) => setShippingInfo({ ...shippingInfo, address: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  {/* Payment Method Selector */}
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                      Select Payment Mode
+                    </label>
+                    <div className="grid grid-cols-3 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setShippingInfo({ ...shippingInfo, paymentMethod: 'UPI' })}
+                        className={`p-3 rounded-2xl border text-center transition-all ${shippingInfo.paymentMethod === 'UPI' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'}`}
+                      >
+                        <div className="text-lg mb-1">📱</div>
+                        <div className="text-xs font-bold">Instant UPI</div>
+                        <div className="text-[10px] text-slate-400">Dynamic QR Code</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShippingInfo({ ...shippingInfo, paymentMethod: 'CARD' })}
+                        className={`p-3 rounded-2xl border text-center transition-all ${shippingInfo.paymentMethod === 'CARD' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'}`}
+                      >
+                        <div className="text-lg mb-1">💳</div>
+                        <div className="text-xs font-bold">Cards</div>
+                        <div className="text-[10px] text-slate-400">Tokenized &amp; Saved</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShippingInfo({ ...shippingInfo, paymentMethod: 'COD' })}
+                        className={`p-3 rounded-2xl border text-center transition-all ${shippingInfo.paymentMethod === 'COD' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-bold' : 'border-slate-200 dark:border-slate-800 hover:border-slate-300'}`}
+                      >
+                        <div className="text-lg mb-1">💵</div>
+                        <div className="text-xs font-bold">Cash Delivery</div>
+                        <div className="text-[10px] text-slate-400">Pay at Doorstep</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card Section with Saved Cards & Save Card Option */}
+                  {shippingInfo.paymentMethod === 'CARD' && (
+                    <div className="p-4 bg-slate-50 dark:bg-slate-850 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                        Saved Credit &amp; Debit Cards
+                      </div>
+                      
+                      {savedCards.map(card => (
+                        <label 
+                          key={card.id} 
+                          className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedCardId === card.id ? 'border-emerald-500 bg-white dark:bg-slate-800' : 'border-slate-200 dark:border-slate-700'}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <input 
+                              type="radio" 
+                              name="saved_card" 
+                              checked={selectedCardId === card.id}
+                              onChange={() => setSelectedCardId(card.id)}
+                              className="w-4 h-4 text-emerald-600"
+                            />
+                            <div>
+                              <div className="font-bold text-xs text-slate-900 dark:text-white">{card.maskedCardNumber}</div>
+                              <div className="text-[10px] text-slate-400">{card.cardBrand} • Exp {card.expiryMonth}/{card.expiryYear}</div>
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded">
+                            VERIFIED
+                          </span>
+                        </label>
+                      ))}
+
+                      {/* New Card Option with Save Card Toggle Checkbox */}
+                      <div className="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-2">
+                        <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Or Pay with New Card:</div>
+                        <input
+                          type="text"
+                          placeholder="Card Number (e.g. 4532 •••• •••• 9921)"
+                          value={newCardNumber}
+                          onChange={(e) => setNewCardNumber(e.target.value)}
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            placeholder="MM / YY"
+                            value={newCardExpiry}
+                            onChange={(e) => setNewCardExpiry(e.target.value)}
+                            className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
+                          />
+                          <input
+                            type="password"
+                            placeholder="CVV"
+                            maxLength="3"
+                            value={newCardCvv}
+                            onChange={(e) => setNewCardCvv(e.target.value)}
+                            className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
+                          />
+                        </div>
+
+                        {/* Save Card Checkbox */}
+                        <label className="flex items-center gap-2 cursor-pointer pt-1">
+                          <input
+                            type="checkbox"
+                            checked={saveCardForFuture}
+                            onChange={(e) => setSaveCardForFuture(e.target.checked)}
+                            className="w-4 h-4 text-emerald-600 rounded"
+                          />
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Save this card securely for future purchases (PCI Compliant Token)
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Proceed Button */}
+                  <button
+                    onClick={handleProceedToPayment}
+                    className="w-full py-3.5 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-500/25 transition-all"
+                  >
+                    {shippingInfo.paymentMethod === 'UPI' ? 'GENERATE UPI QR CODE & PAY' : `PAY ₹${cartTotal.toFixed(2)}`}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DYNAMIC UPI QR MODAL */}
+          {isUpiModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-200 dark:border-slate-800 relative">
+                <button 
+                  onClick={() => setIsUpiModalOpen(false)}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2"
+                >
+                  ✕
+                </button>
+
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-lg flex items-center justify-center mx-auto mb-2">
+                  MG
+                </div>
+                <h3 className="font-black text-lg text-slate-900 dark:text-white">Scan &amp; Pay via UPI</h3>
+                <p className="text-xs text-slate-400 mb-4">Pay securely with Google Pay, PhonePe, Paytm or BHIM</p>
+
+                {/* QR Canvas Box */}
+                <div className="p-4 bg-white rounded-3xl border-2 border-emerald-500/30 shadow-lg inline-block mx-auto mb-4">
+                  <div ref={qrCodeRef} className="w-[210px] h-[210px] flex items-center justify-center"></div>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl text-xs space-y-1 mb-4 border border-slate-200 dark:border-slate-700">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Merchant VPA:</span>
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">mgmart@okhdfcbank</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Amount Due:</span>
+                    <span className="font-black text-emerald-500 text-sm">₹{cartTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Simulate Payment Completion Button */}
+                <button
+                  onClick={() => completeOrder("UPI DYNAMIC QR")}
+                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition-all"
+                >
+                  Simulate Successful UPI Scan &amp; Pay
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* USER AUTH MODAL */}
+          {isAuthOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative">
+                <button 
+                  onClick={() => setIsAuthOpen(false)}
+                  className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2"
+                >
+                  ✕
+                </button>
+
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 text-white font-black text-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-500/25">
+                    MG
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                    {authTab === 'signup' ? 'Create MG Mart Account' : 'Welcome to MG Mart'}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Unlock exclusive member pricing and dynamic UPI checkout
+                  </p>
+                </div>
+
+                {/* Switcher */}
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl mb-5 text-xs font-bold">
+                  <button
+                    onClick={() => setAuthTab('signin')}
+                    className={`flex-1 py-2 rounded-xl transition-all ${authTab === 'signin' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow font-black' : 'text-slate-400'}`}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => setAuthTab('signup')}
+                    className={`flex-1 py-2 rounded-xl transition-all ${authTab === 'signup' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow font-black' : 'text-slate-400'}`}
+                  >
+                    New Registration
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  {authTab === 'signup' && (
+                    <input
+                      type="text"
+                      placeholder="Full Name (e.g. Muaviya Markande)"
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs"
+                    />
+                  )}
+                  <input
+                    type="email"
+                    placeholder="Email Address (e.g. muaviya@example.com)"
+                    defaultValue="customer@mgmart.com"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    defaultValue="password123"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs"
+                  />
+
+                  <button
+                    onClick={() => setIsAuthOpen(false)}
+                    className="w-full py-3.5 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-500/25 mt-2"
+                  >
+                    {authTab === 'signup' ? 'Create Account' : 'Sign In Now'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STORE MANAGEMENT / ADMIN PANEL MODAL */}
+          {isAdminOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-800 relative max-h-[90vh] flex flex-col">
+                <button 
+                  onClick={() => setIsAdminOpen(false)}
+                  className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2"
+                >
+                  ✕
+                </button>
+
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-500 text-white flex items-center justify-center font-bold">
+                    📦
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white">MG Mart Store Management Console</h3>
+                    <p className="text-xs text-slate-400">Live Inventory control &amp; Flash Sale configuration</p>
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                        <th className="py-2.5">Item</th>
+                        <th className="py-2.5">Category</th>
+                        <th className="py-2.5">MRP / MG Mart Price</th>
+                        <th className="py-2.5">Origin</th>
+                        <th className="py-2.5">Stock</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {products.map(p => (
+                        <tr key={p.id}>
+                          <td className="py-2.5 flex items-center gap-2">
+                            <img src={p.imageUrl} alt="" className="w-8 h-8 rounded-lg object-cover" />
+                            <span className="font-bold text-slate-900 dark:text-slate-100">{p.name}</span>
+                          </td>
+                          <td className="py-2.5 text-slate-500">{p.categoryName}</td>
+                          <td className="py-2.5">
+                            <span className="line-through text-slate-400 mr-1.5">₹{p.mrpPrice}</span>
+                            <span className="text-emerald-500 font-bold">₹{p.dmartPrice}</span>
+                          </td>
+                          <td className="py-2.5 text-slate-400">{p.originCountry || 'India'}</td>
+                          <td className="py-2.5 font-bold">{p.stockQuantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ORDER SUCCESS CELEBRATION MODAL */}
+          {orderSuccess && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+              <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 text-center shadow-2xl border border-slate-200 dark:border-slate-800 relative">
+                <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto mb-4 shadow-xl shadow-emerald-500/25">
+                  <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-1.5">
+                  Order Confirmed!
+                </h3>
+                <p className="text-xs text-slate-400 mb-6">
+                  Thank you for shopping with MG Mart. Your order is scheduled for priority dispatch.
+                </p>
+
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl text-left text-xs space-y-2 mb-6 border border-slate-200 dark:border-slate-700">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Order ID:</span>
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">{orderSuccess.orderNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Payment Status:</span>
+                    <span className="font-bold text-emerald-500">PAID &amp; SETTLED</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Payment Mode:</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{orderSuccess.paymentMethod}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <span className="font-bold text-slate-900 dark:text-white">Total Amount Paid:</span>
+                    <span className="font-black text-emerald-500 text-base">₹{Number(orderSuccess.amount).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setOrderSuccess(null)}
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-500/25 transition-all"
+                >
+                  Continue Shopping
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* SLEEK BOUTIQUE FOOTER */}
+          <footer className="bg-white/80 dark:bg-slate-925/80 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 pt-16 pb-12 transition-colors mt-12">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              
+              {/* Trust Value Propositions */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-12 border-b border-slate-200/80 dark:border-slate-800/80 text-center md:text-left">
+                <div className="flex flex-col md:flex-row items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 shadow-sm border border-amber-200/60 dark:border-amber-800/40">
+                    <span className="text-xl">🌾</span>
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white">100% Desi &amp; Farm Pure</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Direct Chakki Atta &amp; Agmark Dals</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 shadow-sm border border-blue-200/60 dark:border-blue-900/40">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white">Express Delivery</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Complimentary on carts above ₹500</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center flex-shrink-0 shadow-sm border border-violet-200/60 dark:border-violet-900/40">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white">Instant Doorstep Returns</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Zero questions asked refund policy</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 shadow-sm border border-emerald-200/60 dark:border-emerald-900/40">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white">Instant UPI &amp; Cards</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">Dynamic QR &amp; PCI tokenized cards</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Copyright & Badges */}
+              <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-sm flex items-center justify-center">
+                    MG
+                  </div>
+                  <span>&copy; {new Date().getFullYear()} MG Mart Supercenter. Powered by Spring Boot 3 &amp; React 18.</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-[11px] font-bold">
+                  <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">UPI 2.0</span>
+                  <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">GPay</span>
+                  <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">PhonePe</span>
+                  <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">RuPay</span>
+                  <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700">Visa / MC</span>
+                </div>
+              </div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    // Render the React App
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
